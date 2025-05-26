@@ -52,6 +52,8 @@ func (q *Queue) GetMany(n int) []Item {
 	return items
 }
 
+// randYield randomly yields the current goroutine, and makes way for some other.
+// Not used much, as the Go scheduler usually handles goroutine scheduling efficiently.
 func randYield() {
 	if rand.Intn(3) == 0 {
 		runtime.Gosched()
