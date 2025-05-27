@@ -114,36 +114,23 @@ func ResourcePoolCool() {
 			c, _ := p.Acquire()
 			conns <- c
 		}(i)
-		time.Sleep(10 * time.Millisecond)
 	}
 
 	go func() {
 		wg.Wait()
-		// close(conns)
+		close(conns)
 	}()
 
-	// wg2 := sync.WaitGroup{}
-	// for c := range conns {
-	// 	wg2.Add(1)
-	// 	go func(c net.Conn) {
-	// 		defer wg2.Done()
-	// 		p.Release(c)
-	// 	}(c)
-	// }
-
-	// wg2.Wait()
-
-	wg3 := sync.WaitGroup{}
-	for i := range n * 2 {
-		wg3.Add(1)
-		fmt.Printf("[main] Release %+v\n", i)
-		go func(i int) {
-			defer wg3.Done()
-			p.Release(<-conns)
-		}(i)
-		time.Sleep(100 * time.Millisecond)
+	wg2 := sync.WaitGroup{}
+	for c := range conns {
+		wg2.Add(1)
+		go func(c net.Conn) {
+			defer wg2.Done()
+			p.Release(c)
+		}(c)
+		time.Sleep(10 * time.Millisecond)
 	}
 
-	wg3.Wait()
+	wg2.Wait()
 
 }
