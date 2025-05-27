@@ -8,8 +8,11 @@ import (
 	_ "github.com/nascarsayan/go-concurrency/pkg/06-async-internal"
 	_ "github.com/nascarsayan/go-concurrency/pkg/07-queue-cond"
 	_ "github.com/nascarsayan/go-concurrency/pkg/08-respool-cond"
+	respool_cooldown "github.com/nascarsayan/go-concurrency/pkg/08-respool-cooldown"
 	_ "github.com/nascarsayan/go-concurrency/pkg/10-queue-chan"
-	chan_queue_state "github.com/nascarsayan/go-concurrency/pkg/11-queue-chan-state"
+	_ "github.com/nascarsayan/go-concurrency/pkg/11-queue-chan-state"
+	_ "github.com/nascarsayan/go-concurrency/pkg/12-repeating-transition-cond"
+	_ "github.com/nascarsayan/go-concurrency/pkg/13-repeating-transition-chan"
 )
 
 func main() {
@@ -22,5 +25,8 @@ func main() {
 	// cond_respool.ResourcePoolCond()
 	// chan_respool.ResourcePoolChan()
 	// chan_queue.QueueChan()
-	chan_queue_state.QueueChanWithState()
+	// chan_queue_state.QueueChanWithState()
+	// repeating_transition_cond.RepeatingTransition()
+	respool_cooldown.ResourcePoolCool()
+	// repeating_transition_chan.RepeatingTransitionChan()
 }
