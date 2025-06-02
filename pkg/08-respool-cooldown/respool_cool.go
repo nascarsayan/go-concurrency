@@ -105,7 +105,7 @@ func ResourcePoolCool() {
 	p := NewPool(n)
 	wg := sync.WaitGroup{}
 
-	conns := make(chan net.Conn)
+	conns := make(chan net.Conn, n*3)
 	for i := range n * 3 {
 		wg.Add(1)
 		fmt.Printf("[main] Acquire %+v\n", i)
