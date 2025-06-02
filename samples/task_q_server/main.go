@@ -28,13 +28,15 @@ type StatusReq struct {
 
 var queue *Queue
 
+// TODO: A shutdown channel can be added for graceful shutdown.
+// TODO: Add context for cancellation.
 type Queue struct {
-	// Job to jobReqCh should be sent here.
+	// Job request should be sent here.
 	jobReqCh chan JobReq
 	// Status request should be sent here.
 	statusReqCh chan StatusReq
-	// A job just completed should be sent back here.
-	doneCh    chan *JobReq
+	// A job just completed should be sent back here to reprocess the queue.
+	jobDoneCh chan *JobReq
 	Running   []*JobReq
 	Pending   []*JobReq
 	nextJobId int
@@ -103,8 +105,8 @@ func (q *Queue) Run() {
 				req.Job.Id = q.nextJobId
 			}
 			q.Running = append(q.Running, &req)
-			go req.Start(q.doneCh)
-		case done := <-q.doneCh:
+			go req.Start(q.jobDoneCh)
+		case done := <-q.jobDoneCh:
 			// remove job id from the running queue
 			for i := range len(q.Running) {
 				if q.Running[i].Job.Id == done.Job.Id {
@@ -120,7 +122,7 @@ func (q *Queue) Run() {
 				req := q.Pending[0]
 				q.Pending = q.Pending[1:]
 				q.Running = append(q.Running, req)
-				go req.Start(q.doneCh)
+				go req.Start(q.jobDoneCh)
 			}
 		case req := <-q.statusReqCh:
 			fmt.Printf("Status request received at %s\n", time.Now().Format(time.RFC3339))
@@ -135,7 +137,7 @@ func initQueue() *Queue {
 	q := new(Queue)
 	q.jobReqCh = make(chan JobReq)
 	q.statusReqCh = make(chan StatusReq)
-	q.doneCh = make(chan *JobReq)
+	q.jobDoneCh = make(chan *JobReq)
 	q.Running = make([]*JobReq, 0)
 	q.Pending = make([]*JobReq, 0)
 	go q.Run()
