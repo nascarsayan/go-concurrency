@@ -42,13 +42,14 @@ type Queue struct {
 	nextJobId int
 }
 
-func (q *Queue) Submit(job Job) chan Job {
-	if job.Id == 0 {
-		q.nextJobId++
-		job.Id = q.nextJobId
-	}
+func (q *Queue) Submit(durationSecs int) chan Job {
+	q.nextJobId++
 	now := time.Now().Local()
-	job.SubmittedAt = &now
+	job := Job{
+		Id:           q.nextJobId,
+		DurationSecs: durationSecs,
+		SubmittedAt:  &now,
+	}
 	req := JobReq{
 		Job:    job,
 		result: make(chan Job),
@@ -158,16 +159,11 @@ func handleJob(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid JSON", http.StatusBadRequest)
 		return
 	}
-	now := time.Now().Local()
-	j := Job{
-		DurationSecs: data.Time,
-		SubmittedAt:  &now,
-	}
-	if j.DurationSecs <= 0 {
-		http.Error(w, "Invalid duration", http.StatusBadRequest)
+	if data.Time <= 0 {
+		http.Error(w, "Invalid duration < 0 : ", http.StatusBadRequest)
 		return
 	}
-	jobCh := queue.Submit(j)
+	jobCh := queue.Submit(data.Time)
 	output := <-jobCh
 	b, err := json.MarshalIndent(output, "", "  ")
 	if err != nil {
